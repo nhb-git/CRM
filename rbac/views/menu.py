@@ -193,3 +193,16 @@ def multi_permission(request):
         'id', 'title', 'url', 'is_menu', 'icon', 'alias', 'parent_menu_id'
     )
     return HttpResponse('ok')
+
+
+def distribute_permissions(request):
+    """
+    权限分配
+    :param request:
+    :return:
+    """
+    user_list = models.UserInfo.objects.all()
+    role_list = models.Role.objects.all()
+    return render(request, 'rbac/distribute_permissions.html', {
+        'user_list': user_list, 'role_list': role_list
+    })

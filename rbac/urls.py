@@ -27,4 +27,7 @@ urlpatterns = [
     url(r'menu/edit/(?P<level>first|second)/(?P<menu_id>\d+)/$', menu.menu_edit, name='menu_edit'),
     url(r'menu/del/(?P<level>first|second)/(?P<menu_id>\d+)/$', menu.menu_del, name='menu_del'),
     url(r'menu/mul/$', menu.multi_permission, name='multi_permission'),
+
+    # 权限分配
+    url(r'distribute/permissions/$', menu.distribute_permissions, name='distribute_permissions'),
 ]
