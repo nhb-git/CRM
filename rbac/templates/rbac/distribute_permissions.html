@@ -6,6 +6,9 @@
         tr.active{
             border-left: 3px solid orange;
         }
+        .user-state a{
+            color: red;
+        }
     </style>
 {% endblock %}
 
@@ -20,7 +23,7 @@
                 <div class="panel-body">
                     <ul>
                         {% for user in user_list %}
-                            <li>{{ user.name }}</li>
+                            <li class="{% if user.id|safe == user_id %}user-state{% endif %}"><a href="?uid={{ user.id }}">{{ user.name }}</a></li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -30,6 +33,9 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <i class="fa fa-gavel" aria-hidden="true"></i> 角色信息
+                    {% if user_id %}
+                        <a href="#" class="right btn btn-success btn-xs">保存</a>
+                    {% endif %}
                 </div>
                 <div class="panel-body">
                     提示: 点击用户后才能为其分派角色
@@ -46,7 +52,7 @@
                             <tr>
                                 <td>{{ role.title }}</td>
                                 <td>
-                                    <input type="checkbox" name="roles" value="{{ role.id }}">
+                                    <input type="checkbox" name="roles" value="{{ role.id }}" {% if role.id in user_has_roles_dict %}checked{% endif %}>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -63,6 +69,39 @@
                 <div class="panel-body">
                     提示: 点击角色后才能为其分派权限
                 </div>
+                <table class="table">
+                    <tbody>
+                    {% for menu_item in all_menu_list %}
+                        <tr class="root">
+                            <td>
+                                <i class="fa fa-caret-down" aria-hidden="true"></i> {{ menu_item.title }}
+
+                                <div class="select-help pull-right">
+                                    <div class="check-all">
+                                        <label for="check_all_{{ menu_item.id }}">全选</label>
+                                        <input type="checkbox" id="check_all_{{ menu_item.id }}">
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="node">
+                            <td>
+                                {% for item in menu_item.children %}
+                                    <input type="checkbox" id="permission_{{ item.id }}" name="permission" value="{{ item.id }}"
+                                     {% if item.id in user_has_permissions_dict %}
+                                        checked
+                                     {% endif %} >
+                                    {% if item.is_menu %}
+                                    <label for="permission_{{ item.id }}">{{ item.title }}(菜单) </label>
+                                    {% else %}
+                                    <label for="permission_{{ item.id }}">{{ item.title }}</label>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

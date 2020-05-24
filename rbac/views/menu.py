@@ -201,8 +201,46 @@ def distribute_permissions(request):
     :param request:
     :return:
     """
+    user_id = request.GET.get('uid')
+    user_obj = models.UserInfo.objects.filter(id=user_id).first()
+    user_has_roles_dict = dict()
+    user_has_permissions_dict = dict()
+    # 获取当前用户的角色
+    if not user_obj:
+        user_id = None
+        user_has_roles = []
+    else:
+        user_has_roles = user_obj.roles.all()
+        user_has_roles_dict = {item.id: None for item in user_has_roles}
+        user_has_permissions = user_obj.roles.filter(permissions__id__isnull=False).values('id', 'permissions').distinct()
+        user_has_permissions_dict = {item['permissions']: None for item in user_has_permissions}
+        print(user_has_roles)
+
     user_list = models.UserInfo.objects.all()
     role_list = models.Role.objects.all()
-    return render(request, 'rbac/distribute_permissions.html', {
-        'user_list': user_list, 'role_list': role_list
-    })
+
+    all_menu_list = models.Permission.objects.all().values('id', 'title', 'parent_menu_id', 'is_menu')
+    all_menu_dict = dict()
+    first_menu_list = list()
+    second_menu_list = list()
+
+    # 获取一级菜单和二级菜单信息
+    for item in all_menu_list:
+        item['children'] = list()
+        if item['parent_menu_id']:
+            second_menu_list.append(item)
+
+        if not item['parent_menu_id'] and item['is_menu']:
+            first_menu_list.append(item)
+            all_menu_dict[item['id']] = item
+
+    # 二级菜单归入一级菜单中
+    for second_item in second_menu_list:
+        parent_menu_id = second_item['parent_menu_id']
+        all_menu_dict[parent_menu_id]['children'].append(second_item)
+    return render(request, 'rbac/distribute_permissions.html',
+                  {
+                      'user_list': user_list, 'role_list': role_list, 'all_menu_list': first_menu_list,
+                      'user_id': user_id, 'user_has_roles_dict': user_has_roles_dict,
+                      'user_has_permissions_dict': user_has_permissions_dict
+                  })
