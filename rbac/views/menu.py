@@ -203,18 +203,28 @@ def distribute_permissions(request):
     """
     user_id = request.GET.get('uid')
     user_obj = models.UserInfo.objects.filter(id=user_id).first()
+
+    # 获取当前role角色对象
+    role_id = request.GET.get('rid')
+    role_obj = models.Role.objects.filter(id=role_id).first()
     user_has_roles_dict = dict()
-    user_has_permissions_dict = dict()
-    # 获取当前用户的角色
+    if not role_obj:
+        role_id = None
+
     if not user_obj:
         user_id = None
         user_has_roles = []
-    else:
+    # 获取当前用户的角色，如果选中了角色，优先显示角色的权限
+    if role_obj:
+        user_has_roles = role_obj.permissions.all()
+        user_has_permissions_dict = {item.id: None for item in user_has_roles}
+    elif user_obj:
         user_has_roles = user_obj.roles.all()
         user_has_roles_dict = {item.id: None for item in user_has_roles}
         user_has_permissions = user_obj.roles.filter(permissions__id__isnull=False).values('id', 'permissions').distinct()
         user_has_permissions_dict = {item['permissions']: None for item in user_has_permissions}
-        print(user_has_roles)
+    else:
+        user_has_permissions_dict = dict()
 
     user_list = models.UserInfo.objects.all()
     role_list = models.Role.objects.all()
@@ -242,5 +252,6 @@ def distribute_permissions(request):
                   {
                       'user_list': user_list, 'role_list': role_list, 'all_menu_list': first_menu_list,
                       'user_id': user_id, 'user_has_roles_dict': user_has_roles_dict,
-                      'user_has_permissions_dict': user_has_permissions_dict
+                      'user_has_permissions_dict': user_has_permissions_dict,
+                      'role_id': role_id
                   })
