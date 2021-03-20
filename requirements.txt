@@ -1,6 +1,6 @@
 asgiref==3.2.7
 Django==1.11.28
-Jinja2==2.11.2
+Jinja2==2.11.3
 MarkupSafe==1.1.1
 pytz==2019.3
 raven==6.4.0
